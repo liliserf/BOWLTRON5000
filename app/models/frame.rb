@@ -4,18 +4,18 @@ class Frame < ActiveRecord::Base
   # Predicates
 
   def bonus_throw?
-    return false unless roll_two
+    return false unless roll_two_val
     frame_number == 10 && 
-    roll_one + roll_two == 10
+    roll_one_val + roll_two_val == 10
   end
 
   def strike?
-    roll_one == 10
+    roll_one_val == 10
   end
 
   def spare?
-    return false unless roll_two
-    roll_one + roll_two == 10
+    return false unless roll_two_val
+    roll_one_val + roll_two_val == 10
   end
 
   def open?
@@ -28,5 +28,17 @@ class Frame < ActiveRecord::Base
 
   def pending?
     status == "pending"
+  end
+
+  def first_roll?
+    roll_one_val && !roll_two_val
+  end
+
+  def second_roll?
+    roll_two_val && !roll_three_val
+  end
+
+  def third_roll?
+    roll_three_val
   end
 end
