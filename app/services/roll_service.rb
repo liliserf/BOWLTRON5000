@@ -11,7 +11,7 @@ class RollService
   def add_roll!
     find_current_frame
     update_roll_value
-    # update_score!
+    update_score!
   end
 
   private
@@ -71,5 +71,7 @@ class RollService
   end
 
   def update_score!
+    scoring_svc = ScoringService.new(player)
+    scoring_svc.score!
   end
 end
