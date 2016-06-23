@@ -33,15 +33,26 @@ class RollService
   def update_roll_value
     return invalid_pins unless valid_roll?
 
+    return assign_rolls_for_final_frame if frame.frame_number == 10
     if !frame.roll_one_val
       frame.roll_one_val = pins_down
       set_frame_to_pending! if frame.strike?
-    elsif frame && frame.roll_one_val && !frame.strike? && !frame.roll_two_val
+    elsif frame.roll_one_val && !frame.strike? && !frame.roll_two_val
       frame.roll_two_val = pins_down
       frame.spare? ? set_frame_to_pending! : finalize_frame!
-    else
-      frame.roll_three_val = pins_down if frame.bonus_throw?
-      finalize_frame!
+    end
+    frame.save!
+  end
+
+  def assign_rolls_for_final_frame
+    if !frame.roll_one_val
+      frame.roll_one_val = pins_down
+      set_frame_to_pending! if frame.strike?
+    elsif !frame.roll_two_val
+      frame.roll_two_val = pins_down
+      set_frame_to_pending! if frame.spare? && frame.roll_two_val != 0
+    else frame.bonus_throw?
+      frame.roll_three_val = pins_down
     end
     frame.save!
   end
@@ -59,15 +70,18 @@ class RollService
   end
 
   def valid_roll?
-    return true if frame.bonus_throw? || !frame.roll_one_val
+    return true if frame.bonus_throw? || 
+      frame.frame_number == 10 && frame.roll_one_val == 10
 
-    if frame.roll_one_val
-      pins_down <= 10 - frame.roll_one_val
+    return true if !frame.roll_one_val
+
+    if !frame.roll_two_val
+      return true if pins_down <= 10 - frame.roll_one_val
     end
   end
 
   def invalid_pins
-    {errors: { details: "too many pins down" } }
+    { errors: { details: "too many pins down" } }
   end
 
   def update_score!

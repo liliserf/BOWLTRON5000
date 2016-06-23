@@ -26,6 +26,7 @@ RSpec.describe RollService do
     context "first roll" do
       it "should add roll_one_val to the current frame" do
         player.frames << frame
+        allow_any_instance_of(RollService).to receive(:update_score!).and_return(true)
         subject
         frame.reload
         expect(frame.roll_one_val).to eq 4
@@ -52,6 +53,8 @@ RSpec.describe RollService do
     context "second roll" do
       it "should add roll_two_val to the current frame" do
         frame.roll_one_val = 5
+        frame.save
+        frame.reload
         player.frames << frame
         subject
         frame.reload
@@ -60,10 +63,11 @@ RSpec.describe RollService do
 
       it "should change status to closed if not a spare" do
         frame.roll_one_val = 5
+        frame.save
         player.frames << frame        
         subject
         frame.reload
-        expect(player.frames.last.status).to eq "closed"
+        expect(frame.status).to eq "closed"
       end 
 
       it "should change status to pending if spare" do

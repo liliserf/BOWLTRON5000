@@ -85,9 +85,11 @@ RSpec.describe ScoringService do
       end
 
       it "should add the bonus roll to the frame score" do
-        final_frame.update_attributes(score: 10, roll_one_val: 6, roll_two_val: 4, roll_three_val: 6, status: "closed")
+        final_frame.update_attributes(score: 10, roll_one_val: 6, roll_two_val: 4, roll_three_val: 6, status: "pending")
         player.frames << final_frame
+        player.reload
         subject
+        final_frame.reload
         expect(final_frame.score).to eq 16
         expect(final_frame.status).to eq "closed"
       end

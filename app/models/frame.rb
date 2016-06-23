@@ -29,16 +29,4 @@ class Frame < ActiveRecord::Base
   def pending?
     status == "pending"
   end
-
-  def first_roll?
-    roll_one_val && !roll_two_val
-  end
-
-  def second_roll?
-    roll_two_val && !roll_three_val
-  end
-
-  def third_roll?
-    roll_three_val
-  end
 end

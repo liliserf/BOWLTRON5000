@@ -54,12 +54,13 @@ class ScoringService
   end
 
   def score_final_frame
-    if current_frame.first_roll?
+    if current_frame.roll_one_val && current_frame.score == 0
       current_frame.score = current_frame.roll_one_val
-    elsif current_frame.second_roll?
+    elsif current_frame.roll_two_val && !current_frame.roll_three_val
       current_frame.score += current_frame.roll_two_val
-    elsif current_frame.third_roll?
+    elsif current_frame.roll_three_val
       current_frame.score += current_frame.roll_three_val
+      current_frame.status = "closed"
     end
     current_frame.save
   end
