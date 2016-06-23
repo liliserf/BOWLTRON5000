@@ -224,8 +224,11 @@ RSpec.describe ScoringService do
           Frame.create(frame_number: 2, roll_one_val: 10, score: 10, status: "pending")
         end
 
+        let!(:current_frame) do 
+          Frame.create(frame_number: 3, roll_one_val: 10, status: "pending")
+        end
+
         it "adds the strike of current frame to previous two frames" do
-          current_frame = Frame.create(frame_number: 3, roll_one_val: 10, score: 10, status: "pending")
           player.frames << [strike_frame_one, strike_frame_two, current_frame]
           subject
           expect(current_frame.score).to eq 10
@@ -277,6 +280,22 @@ RSpec.describe ScoringService do
       end
     end
 
+    context "spares" do
+      let!(:frame_one) do
+        Frame.create(frame_number: 1, roll_one_val: 4, roll_two_val: 6, score: 10, status: "pending")
+      end
+
+      let!(:frame_two) do
+        Frame.create(frame_number: 2, roll_one_val: 3)
+      end
+
+      it "adds the first roll of the next frame to the frame score" do
+        player.frames << [frame_one, frame_two]
+        subject
+        expect(player.running_total).to eq 16
+      end
+    end
+
     context "strikes" do
       let!(:frame_one) do
         Frame.create(frame_number: 1, roll_one_val: 10, score: 10, status: "pending")
@@ -285,6 +304,18 @@ RSpec.describe ScoringService do
       let!(:frame_two) do 
         Frame.create(frame_number: 2, roll_one_val: 3)      
       end
+
+        let!(:strike_frame_one) do
+          Frame.create(frame_number: 1, roll_one_val: 10, score: 20, status: "pending")
+        end
+
+        let!(:strike_frame_two) do
+          Frame.create(frame_number: 2, roll_one_val: 10, score: 10, status: "pending")
+        end
+
+        let!(:current_frame) do 
+          Frame.create(frame_number: 3, roll_one_val: 10, status: "pending")
+        end
 
       it "adds current score with one extra non-strike rolls" do
         player.frames << [frame_one, frame_two]
@@ -300,15 +331,10 @@ RSpec.describe ScoringService do
         expect(player.running_total).to eq 28
       end
 
-      it "scores running_total for three consecutive strikes" do
-        strike_frame_one = Frame.create(frame_number: 1, roll_one_val: 10, score: 30, status: "pending")
-        strike_frame_two = Frame.create(frame_number: 2, roll_one_val: 10, score: 20, status: "pending")
-        current_frame = Frame.create(frame_number: 3, roll_one_val: 10, score: 10, status: "pending")
-        
+      it "scores running_total for three consecutive strikes" do        
         player.frames << [strike_frame_one, strike_frame_two, current_frame]
         subject
         expect(player.running_total).to eq 60
-
       end
     end
   end
