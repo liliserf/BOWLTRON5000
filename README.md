@@ -56,7 +56,7 @@ curl -i -X POST -d 'game[players_attributes][][name]=Beyonce&game[players_attrib
   ]
 }
 ```
-- Request returns errors when unable to create records.
+- Request returns errors when unable to create records. Checks for valid players_attributes params, limits players params to 6 (because that's how bowling alleys work... right? it's been awhile), and validates that name is not blank.
 
 ### UPDATE
 
@@ -101,7 +101,7 @@ curl -i -X PUT -d 'players[pins_down]=10' http://localhost:3000/api/v1/players/3
 ```
 
 - Request returns errors with detailed descriptions of why request failed.
-Validates for valid roll amount and maximum number of frames when creating a new frame.
+Validates for valid roll amount, maximum number of frames, and player with correct ID when creating a new frame.
 
 
 
