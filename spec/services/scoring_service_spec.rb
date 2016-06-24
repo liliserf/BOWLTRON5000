@@ -64,7 +64,7 @@ RSpec.describe ScoringService do
         end
 
         it "should add the second roll to the frame score" do
-          final_frame.update_attributes(score: 6, roll_two_val: 2, status: "closed")
+          final_frame.update_attributes(score: 6, roll_two_val: 2, status: "open")
           player.frames << final_frame
           subject
           expect(final_frame.score).to eq 8
@@ -110,7 +110,13 @@ RSpec.describe ScoringService do
         end
 
         it "should add the third roll to the frame score" do
-        final_frame.update_attributes(score: 14, roll_one_val: 10, roll_two_val: 4, roll_three_val: 6, status: "closed")
+          final_frame.update_attributes(
+            score: 14, 
+            roll_one_val: 10, 
+            roll_two_val: 4, 
+            roll_three_val: 6, 
+            status: "pending"
+          )
           player.frames << final_frame
           subject
           expect(final_frame.score).to eq 20

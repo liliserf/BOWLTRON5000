@@ -6,12 +6,16 @@ RSpec.describe FrameService do
     Game.create(players_attributes: [{ name: "Bob" }])
   end
 
-  let(:player) do
+  let!(:player) do
     game.players.first
   end
 
+  let(:pins_down) do
+    4
+  end
+
   let(:frame_svc) do
-    FrameService.new(player.id)
+    FrameService.new(player.id, pins_down)
   end
 
   let(:ten_frames) do
@@ -25,22 +29,24 @@ RSpec.describe FrameService do
     frames
   end
 
-  subject { frame_svc.build! }
+  subject { frame_svc.update_player_frames! }
 
-  describe "#build!" do
+  describe "#update_player_frame!" do
     context "first frame" do
       it "builds a new frame at frame number 1 for a player" do
         subject
         expect(player.frames.count).to eq 1
-        expect(subject.frame_number).to eq 1
+        expect(player.frames.last.frame_number).to eq 1
       end
     end
     context "not the first frame" do
       it "increases the frame_number by one" do
-        frame = Frame.create(frame_number: 1)
+        allow_any_instance_of(FrameService).to receive(:update_roll!).and_return(true)
+        frame = Frame.create(frame_number: 1, status: "closed")
         player.frames << frame
         subject
-        expect(subject.frame_number).to eq 2
+        frame.reload
+        expect(player.frames.last.frame_number).to eq 2
         expect(player.frames.count).to eq 2
       end
 

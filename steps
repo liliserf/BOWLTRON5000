@@ -1,7 +1,6 @@
 steps to completing a game in the rails console
-g = Game.create(players_attributes: [{ name: "lili" }])
-p = g.players.last
-fs = FrameService.new(p)
+p = Game.create(players_attributes: [{ name: "lili" }]).players.last
+fs = FrameService.new(p,id, 10)
 fs.build!
 rs = RollService.new(p, 8)
 rs.add_roll!

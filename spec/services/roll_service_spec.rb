@@ -17,7 +17,7 @@ RSpec.describe RollService do
   let(:pins_down) { 4 } 
 
   let(:roll_svc) do
-    RollService.new(player, pins_down)
+    RollService.new(player: player, pins_down: pins_down, frame: frame)
   end
 
   subject { roll_svc.add_roll! }
@@ -42,7 +42,7 @@ RSpec.describe RollService do
       it "should change status to pending if strike" do
         pins_down = 10
         player.frames << frame
-        roll_svc = RollService.new(player, pins_down)
+        roll_svc = RollService.new(player: player, pins_down: pins_down, frame: frame)
         roll_svc.add_roll!
         frame.reload
         expect(frame.roll_one_val).to eq 10
@@ -88,18 +88,17 @@ RSpec.describe RollService do
     end
 
     context "third roll" do
+
       it "should add a bonus roll if first two rolls of frame 10 equal 10" do
-        f = Frame.create(frame_number: 10)
-        f.update_attributes(roll_one_val: 9, roll_two_val: 1)
-        player.frames << f
+        frame.update_attributes(frame_number: 10, roll_one_val: 9, roll_two_val: 1)
+        player.frames << frame
         subject
         expect(player.frames.last.roll_three_val).to eq 4
       end
 
       it "should not add a bonus roll if not frame 10" do
-        f = Frame.create(frame_number: 9)
-        f.update_attributes(roll_one_val: 9, roll_two_val: 1)
-        player.frames << f
+        frame.update_attributes(roll_one_val: 9, roll_two_val: 1)
+        player.frames << frame
         subject
         expect(player.frames.last.roll_three_val).to be_nil
       end

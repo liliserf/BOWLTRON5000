@@ -10,6 +10,7 @@ class ScoringService
     score_current_frame
     update_previous_frames
     update_running_total
+    return player, player.frames.last
   end
 
   private
@@ -44,49 +45,15 @@ class ScoringService
     frames = find_frames_to_update
 
     frames.each do |frame|
-      if (frame.frame_number == previous_frame_number || two_frames_ago) && frame.strike?
+      if frame.frame_number == 9 && current_frame.roll_three_val
+        close!(frame)
+      elsif (frame.frame_number == previous_frame_number || two_frames_ago) && frame.strike?
         score_strike!(frame)
       elsif frame.frame_number == previous_frame_number && frame.spare?
         score_spare!(frame)
       end
       frame.save
     end
-  end
-
-  def score_final_frame
-    if current_frame.roll_one_val && current_frame.score == 0
-      current_frame.score = current_frame.roll_one_val
-    elsif current_frame.roll_two_val && !current_frame.roll_three_val
-      current_frame.score += current_frame.roll_two_val
-    elsif current_frame.roll_three_val
-      current_frame.score += current_frame.roll_three_val
-      close(current_frame)
-    end
-    current_frame.save
-  end
-
-  def score_bonus_roll
-    current_frame.score += current_frame.roll_three_val      
-    close(current_frame)
-    current_frame.save
-  end
-
-  def find_frames_to_update
-    player.frames.where(status: "pending").where.not(id: current_frame.id)
-  end
-
-  def previous_frame_number
-    current_frame.frame_number - 1
-  end
-
-  def two_frames_ago
-    current_frame.frame_number - 2
-  end
-
-  def score_spare!(frame)
-    frame.score += current_frame.roll_one_val
-    close(frame)
-    frame.save
   end
 
   # If the current frame is on the first roll:
@@ -104,22 +71,59 @@ class ScoringService
   def score_strike!(frame)
     if current_frame.open?
       frame.score += current_frame.roll_one_val
-      close(frame) if frame.frame_number == two_frames_ago
+      close!(frame) if frame.frame_number == two_frames_ago
     elsif current_frame.closed? || (current_frame.roll_two_val && current_frame.spare?)
       frame.score += current_frame.roll_two_val
-      close(frame)
+      close!(frame)
     elsif current_frame.strike? && frame.frame_number == two_frames_ago
       frame.score += current_frame.roll_one_val
-      close(frame)
+      close!(frame)
     else
       frame.score += current_frame.roll_one_val  
     end
     frame.save
   end
 
-  def close(frame)
+  def score_final_frame
+    return game_complete if current_frame.closed?
+
+    if current_frame.roll_one_val && current_frame.score == 0
+      current_frame.score = current_frame.roll_one_val
+    elsif current_frame.roll_two_val && !current_frame.roll_three_val
+      current_frame.score += current_frame.roll_two_val
+    elsif current_frame.roll_three_val && current_frame.pending?
+      current_frame.score += current_frame.roll_three_val
+      close!(current_frame)
+    end
+    current_frame.save
+  end
+
+  def find_frames_to_update
+    player.frames.where(status: "pending").where.not(id: current_frame.id)
+
+  end
+
+  def previous_frame_number
+    current_frame.frame_number - 1
+  end
+
+  def two_frames_ago
+    current_frame.frame_number - 2
+  end
+
+  def score_spare!(frame)
+    frame.score += current_frame.roll_one_val
+    close!(frame)
+    frame.save
+  end
+
+  def close!(frame)  
     frame.status = "closed"
     frame.save
+  end
+
+  def game_complete
+    { errors: { detail: "roll limit has been reached" } }
   end
 
 end
