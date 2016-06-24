@@ -1,11 +1,16 @@
 class ScoringService
   attr_accessor :player, :current_frame
 
+  # Initializes with player object and finds the player's current frame
   def initialize(player)
     @player = player
     @current_frame = player.frames.last
   end
 
+  # Scores the current frame.
+  # Updates scores of previous pending frames.
+  # Updates player's current running total
+  # returns the player
   def score!
     score_current_frame
     update_previous_frames
@@ -15,10 +20,12 @@ class ScoringService
 
   private
 
+  # Go to special scoring logic if it's the final frame
+  # 
   # If the frame has just been completed with either 2 regular rolls or a spare
   # update the current_frame score to include roll_two_val.
-
-  # If the current_frame does not yet have a roll_two_val, 
+  # 
+  # If the current_frame is still on the first roll,
   # update the frame score with roll one
   def score_current_frame
     current_frame.reload
@@ -31,6 +38,9 @@ class ScoringService
     current_frame.save
   end
 
+  # Updates a player's running total
+  # Resets total to 0 to add up all currently scored frames
+  # returns the player object
   def update_running_total
     player.running_total = 0
     player.frames.each do |frame|
@@ -40,6 +50,18 @@ class ScoringService
     player if player.save
   end
 
+  # Fetches the frames currently marked as pending from the previous frame and two frames ago
+  # iterates through the frames to update the scores
+  # 
+  # If it's the 9th frame, and this is the bonus roll fo the final frame:
+  # Close the frame without adding additional points.
+  # 
+  # If the previous frame or two frames ago was a strike
+  # Update with the strike logic
+  # 
+  # If the previous frame was a spare
+  # Update with spare scoring logic
+  # And save the frame
   def update_previous_frames
     frames = find_frames_to_update
 
@@ -63,7 +85,7 @@ class ScoringService
   # Update the status to closed
 
   # If the current frame is a strike 2 frames ago was a strike:
-  # Add the current roll_one_val to the pas strike
+  # Add the current roll_one_val to the past strike
 
   # Else (if the current frame is a strike and the previous frame was a strike):
   # Add one to the previous frame score
@@ -83,6 +105,14 @@ class ScoringService
     frame.save
   end
 
+  # If this is the first roll and has not been scored yet:
+  # Add the first roll to the frame score.
+  # 
+  # If this is the second roll and has not been updated yet:
+  # Add the second roll to the score
+  # 
+  # If this is the final roll and the previous rolls were a strike or spare:
+  # Add the third roll to the score and close the frame
   def score_final_frame
     return game_complete if current_frame.closed?
 
@@ -97,6 +127,7 @@ class ScoringService
     current_frame.save
   end
 
+  # Finds all frames that are pending aside from current frame
   def find_frames_to_update
     player.frames.where(status: "pending").where.not(id: current_frame.id)
 

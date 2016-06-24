@@ -1,5 +1,9 @@
 class Api::V1::PlayersController < ApplicationController
 
+  # Update's a player's game using a series of services to hold related logic
+  # Returns errors if request is unsuccessful
+  # Returns player object including a running total and 
+  # the current frame updated to the most recent roll.
   # PUT /api/v1/players/{id}
   def update
     frame_svc = FrameService.new(
