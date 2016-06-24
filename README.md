@@ -1,7 +1,7 @@
 # BOWLTRON5000 API
 
 ## Installation 
-Uses Ruby 2.3.1, Rails 4.2.6, SQLite 9.5.3 as database and kaminari gem for pagination.
+Uses Ruby 2.3.1, Rails 4.2.6, SQLite as database.
  1. git clone project `git clone git@github.com:liliserf/bowltron5000.git`
  3. cd into project `cd bowltron5000`
  4. run `bundle install`
