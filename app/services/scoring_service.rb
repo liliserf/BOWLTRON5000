@@ -44,9 +44,9 @@ class ScoringService
     frames = find_frames_to_update
 
     frames.each do |frame|
-      if (frame.frame_number == previous_frame || two_frames_ago) && frame.strike?
+      if (frame.frame_number == previous_frame_number || two_frames_ago) && frame.strike?
         score_strike!(frame)
-      elsif frame.frame_number == previous_frame && frame.spare?
+      elsif frame.frame_number == previous_frame_number && frame.spare?
         score_spare!(frame)
       end
       frame.save
@@ -60,14 +60,14 @@ class ScoringService
       current_frame.score += current_frame.roll_two_val
     elsif current_frame.roll_three_val
       current_frame.score += current_frame.roll_three_val
-      current_frame.status = "closed"
+      close(current_frame)
     end
     current_frame.save
   end
 
   def score_bonus_roll
     current_frame.score += current_frame.roll_three_val      
-    current_frame.status = "closed"
+    close(current_frame)
     current_frame.save
   end
 
@@ -75,7 +75,7 @@ class ScoringService
     player.frames.where(status: "pending").where.not(id: current_frame.id)
   end
 
-  def previous_frame
+  def previous_frame_number
     current_frame.frame_number - 1
   end
 
@@ -85,31 +85,41 @@ class ScoringService
 
   def score_spare!(frame)
     frame.score += current_frame.roll_one_val
-    frame.status = "closed"
+    close(frame)
     frame.save
   end
 
   # If the current frame is on the first roll:
   # Add the current roll score to the strike score
+
   # If the current frame is on the second roll:
   # Add the second roll to the strike frame's score and
   # Update the status to closed
+
   # If the current frame is a strike 2 frames ago was a strike:
   # Add the current roll_one_val to the pas strike
+
   # Else (if the current frame is a strike and the previous frame was a strike):
   # Add one to the previous frame score
   def score_strike!(frame)
     if current_frame.open?
       frame.score += current_frame.roll_one_val
+      close(frame) if frame.frame_number == two_frames_ago
     elsif current_frame.closed? || (current_frame.roll_two_val && current_frame.spare?)
       frame.score += current_frame.roll_two_val
-      frame.status = "closed"
+      close(frame)
     elsif current_frame.strike? && frame.frame_number == two_frames_ago
       frame.score += current_frame.roll_one_val
-      frame.status = "closed"
+      close(frame)
     else
       frame.score += current_frame.roll_one_val  
     end
     frame.save
   end
+
+  def close(frame)
+    frame.status = "closed"
+    frame.save
+  end
+
 end
