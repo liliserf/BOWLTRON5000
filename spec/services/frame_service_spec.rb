@@ -11,7 +11,7 @@ RSpec.describe FrameService do
   end
 
   let(:frame_svc) do
-    FrameService.new(player)
+    FrameService.new(player.id)
   end
 
   let(:ten_frames) do

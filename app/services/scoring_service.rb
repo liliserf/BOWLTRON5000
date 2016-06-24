@@ -37,7 +37,7 @@ class ScoringService
       player.running_total += frame.score
     end
     player.save
-    player.running_total
+    player
   end
 
   def update_previous_frames
