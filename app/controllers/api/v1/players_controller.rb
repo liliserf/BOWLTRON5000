@@ -1,32 +1,22 @@
 class Api::V1::PlayersController < ApplicationController
 
-  # # POST /api/v1/players
-  # def create
-  #   frame_svc = FrameService.new(player_id: frame_params[:player_id])
-  #   new_frame = frame_svc.update_player_frame!
-  #   if new_frame[:errors]
-  #     render json: new_frame, status: 422
-  #   else
-  #     render json: { frame: frame }, status: 201
-  #   end
-  # end
-
-  # PUT only to update existing player id
-
   # PUT /api/v1/players/{id}
   def update
-    frame_svc = FrameService.new(player_id: frame_params[:player_id])
+    frame_svc = FrameService.new(
+      player_id: params[:id], 
+      pins_down: player_params[:pins_down].to_i
+    )
 
-    update_frame = roll_svc.add_roll!
+    player = frame_svc.update_player_frames!
 
-    if update_frame[:errors]
-      render json: new_frame, status: 422
+    if player[:errors]
+      render json: player, status: 422
     else
-      # render json: { frame: frame, player: player }, status 201
+      render json: { player: player, frame: player.frames.last }, status: 201
     end
   end
 
-  def frame_params
-    params.require(:frame).permit(:player_id, :pins_down)
+  def player_params
+    params.require(:players).permit(:pins_down)
   end
 end

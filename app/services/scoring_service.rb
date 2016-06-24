@@ -10,7 +10,7 @@ class ScoringService
     score_current_frame
     update_previous_frames
     update_running_total
-    return player, player.frames.last
+    return player
   end
 
   private
@@ -21,8 +21,8 @@ class ScoringService
   # If the current_frame does not yet have a roll_two_val, 
   # update the frame score with roll one
   def score_current_frame
+    current_frame.reload
     return score_final_frame if current_frame.frame_number == 10
-    
     if current_frame.closed? || current_frame.spare?
       current_frame.score += current_frame.roll_two_val
     elsif !current_frame.roll_two_val
@@ -37,8 +37,7 @@ class ScoringService
       frame.reload
       player.running_total += frame.score
     end
-    player.save
-    player
+    player if player.save
   end
 
   def update_previous_frames
@@ -125,5 +124,4 @@ class ScoringService
   def game_complete
     { errors: { detail: "roll limit has been reached" } }
   end
-
 end

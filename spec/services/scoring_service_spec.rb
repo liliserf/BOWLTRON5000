@@ -15,7 +15,7 @@ RSpec.describe ScoringService do
   end
 
   let(:frame) do
-    Frame.create(frame_number: 1, roll_one_val: 5)
+    Frame.create(frame_number: 1, roll_one_val: 5, player: player)
   end
 
   let(:ten_frames) do

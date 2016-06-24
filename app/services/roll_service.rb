@@ -9,6 +9,7 @@ class RollService
   end
 
   def add_roll!
+    return invalid_pins unless valid_roll?
     update_roll_value
     update_score!
   end
@@ -30,7 +31,6 @@ class RollService
   # 
   # returns the updated Frame object
   def update_roll_value
-    return invalid_pins unless valid_roll?
 
     return assign_roll_values_for_final_frame if frame.frame_number == 10
 
@@ -70,18 +70,19 @@ class RollService
   end
 
   def valid_roll?
-    return true if frame.bonus_throw? || 
-      frame.frame_number == 10 && frame.roll_one_val == 10
-
-    return true if !frame.roll_one_val
-
-    if !frame.roll_two_val
-      return true if pins_down <= 10 - frame.roll_one_val
+    if !frame.roll_one_val && pins_down <= 10 && pins_down >= 0
+      return true
+    elsif frame.roll_one_val && !frame.roll_two_val && pins_down <= 10 - frame.roll_one_val
+      return true
+    elsif frame.bonus_throw? || frame.frame_number == 10 && frame.roll_one_val && frame.roll_one_val <= 10
+      return true
+    else
+      return false
     end
   end
 
   def invalid_pins
-    { errors: { details: "too many pins down" } }
+    { errors: "invalid pins" } 
   end
 
   def update_score!

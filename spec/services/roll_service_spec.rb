@@ -80,6 +80,7 @@ RSpec.describe RollService do
 
       it "should not allow a second roll higher than the first" do
         frame.roll_one_val = 9
+        frame.save
         player.frames << frame        
         subject
         frame.reload

@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :games, only: :create
-      # resources :frames, only: [:create, :update]
+      resources :players, only: [:update]
     end
   end
   # The priority is based upon order of creation: first created -> highest priority.
