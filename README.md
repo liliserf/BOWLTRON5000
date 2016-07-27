@@ -22,10 +22,10 @@ Name | Method | Description
 # Command Line
 
 # Single player
-curl -i -X POST -d 'game[players_attributes][][name]=Lili' http://localhost:3000/api/v1/games
+curl -H "Content-Type:application/json" -H "Accept:application/json" -d '{"game":{"players_attributes":[{"name":"Lili"}]}}' http://localhost:3000/api/v1/games
 
 # Multiple players
-curl -i -X POST -d 'game[players_attributes][][name]=Beyonce&game[players_attributes][][name]=JayZ' http://localhost:3000/api/v1/games
+curl -H "Content-Type:application/json" -H "Accept:application/json" -d '{"game":{"players_attributes":[{"name":"Beyonce"}, {"name":"JayZ"}]}}' http://localhost:3000/api/v1/games
 ```
 
 #### Sample response:
@@ -72,6 +72,8 @@ Name | Method | Parameter | Description
 
 # Command Line
 curl -i -X PUT -d 'players[pins_down]=10' http://localhost:3000/api/v1/players/3
+
+curl -H "Content-Type:application/json" -H "Accept:application/json" -X PUT -d '{"players":{"pins_down":"10"}}' http://localhost:3000/api/v1/players/19
 ```
 
 #### Sample response:
